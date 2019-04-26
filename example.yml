@@ -1,0 +1,297 @@
+# This is an example pod specification file for moby-derp.  It contains all
+# the possible configuration options, with comments describing their use.
+#
+# The name of a pod spec file is important, because the file name is used as
+# the name of the pod to manage, with any extension removed.  Because of the
+# limitations on container names imposed by Moby, this file name must, thus,
+# start with a alphanumeric character, and consist entirely of alphanumeric
+# characters, underscores, and hyphens.
+#
+
+# SECTION 1: CONTAINERS
+#
+# This is really what we're all here for, so let's get straight into it.
+#
+containers:
+  # The containers section contains a map of container names to the
+  # configuration parameters of that container.  Each container's name
+  # must consist entirely of alphanumeric characters, underscores, and
+  # hyphens.
+  #
+  flingle:
+    # The most important parameter for a container -- and, in fact,
+    # the *only* mandatory one -- is the container **image**.  The
+    # value given here must either be a symbolic image reference
+    # (name[:tag][@digest]) or a full image ID, including the digest
+    # identifier (`sha256:xyzzy123`).
+    #
+    image: 'moby-derp/flingle:latest'
+
+    # By default, if a symbolic image spec is provided in the `image` option,
+    # `moby-derp` will pull that image and recreate the container if the image
+    # ID has changed from what is currently running.  If, for some reason, you
+    # do *not* want this behaviour for a specific container, set this option to
+    # `false`.
+    #
+    # Note that, in all cases, if the image ID underlying a symbolic
+    # image spec changes in the local daemon's image store, the container will
+    # be restarted.
+    #
+    update_image: false
+
+    # Many moby images require a command, or at least command-line
+    # options, in order to run correctly.  To do this, set this
+    # key to whatever you need to pass.
+    #
+    # You can specify the command as a string, or as an array of strings if you
+    # want to avoid a layer or two of shell quoting.
+    #
+    command: '--foo=bar --wombat'
+
+    # The 12-factor app concept says that all configuration should be passed
+    # via the environment.  If that is your bag, then this section will make
+    # you very happy.
+    #
+    environment:
+      # The environment is specified as a map of variable name to variable
+      # values.  For passing big strings, you may want to get familiar with
+      # YAML's many string quoting and escaping modes.
+      #
+      APP_ENV: production
+      # Embedding your private key like this isn't necessarily a particularly
+      # good idea, but as an example of where you might need multiline strings,
+      # it works very well.
+      #
+      PRIVATE_KEY: |
+        -----BEGIN PRIVATE KEY-----
+        AAAAsd...
+        -----END PRIVATE KEY-----
+
+    # Persisting data past the lifetime of a particular container is the job
+    # of mounts.  Here you can specify filesystem locations on the host
+    # (relative to the pod's mount root) and where they should be
+    # mounted in the container.
+    #
+    # The list of mounts is an array of hashes, each of which specifies
+    # one mount.
+    #
+    mounts:
+        # The `source` parameter is a *relative* path (relative to the pod's
+        # mount root) on the host's filesystem.  Typically it will be a
+        # single descriptive word, but you can delve into subdirectories if
+        # you so choose.
+        #
+      - source: app
+        # The `target` is an absolute path within the container, where the
+        # associated host directory should be mounted.
+        #
+        target: /app
+
+      - source: static-assets
+        target: /app/public
+
+        # By default, mounts are read-write -- that is, if a process in the
+        # container has the relevant permissions, files in the mount can
+        # be modified, created, and deleted.  If you absolutely, positively
+        # want to make sure that can't happen, set `readonly: true`, and we'll
+        # tell Moby to make it so.
+        #
+        readonly: true
+
+    # Sometimes you need to add a label to a specific container.
+    # This is how you do that.
+    #
+    labels:
+      # It's very simple: `labelname: labelvalue`.
+      #
+      somelabel: 'Some mighty value'
+
+    # Mark the container's *root* filesystem as read-only.  Not *typically*
+    # a good idea.
+    #
+    readonly: true
+
+    # Specify the signal that should be sent to the container in order to
+    # cause it to stop gracefully.  Can be specified as a number, or a
+    # string with or without the leading `SIG`.
+    #
+    stop_signal: SIGQUIT
+
+    # How long, in seconds, to wait for the container to gracefully stop
+    # before whacking it with a `SIGKILL`.
+    #
+    stop_timeout: 42
+
+    # Adjust the container's restart policy.
+    #
+    restart: on-failure:42
+
+    # Here you can place limits on your containers, to prevent them
+    # accidentally blowing up the world.  Note that, in keeping with
+    # moby-derp's philosophy of limited privilege, you can only reduce
+    # the limits on a container, not raise them above what you would
+    # get by default (a bit like ulimits for non-root users).
+    #
+    limits:
+      # How many CPUs' worth of CPU time to allow this container to
+      # use.
+      #
+      cpus: 1.75
+
+      # A relative "share" of CPU time, calculated as a ratio of the
+      # total CPU shares granted to all cgroups.  The default of 1024
+      # is the maximum you can set.
+      #
+      cpu-shares: 72
+
+      # Set memory and swap limits.
+      #
+      # These two settings have complicated inter-relationships.  You
+      # definitely want to refer to
+      # https://docs.docker.com/config/containers/resource_constraints/#--memory-swap-details
+      # before using these.  You may also want to look at
+      # https://docs.docker.com/install/linux/linux-postinstall/#your-kernel-does-not-support-cgroup-swap-limit-capabilities
+      #
+      memory: 1G
+      memory-swap: 42M
+
+      # The "soft limit" for memory usage -- if your container's memory
+      # usage is above this limit, and the overall system is running low on
+      # memory, this container will be pressured to reduce its memory
+      # usage.
+      #
+      memory-reservation: 100M
+
+      # Increase a container's propensity to have its processes whacked by
+      # the OOM killer, if such a thing becomes necessary.  The value must
+      # be in the range 0 to 1000.
+      #
+      oom-score-adj: 42
+
+      # Limit the number of processes this container is allowed to create.
+      #
+      pids: 65535
+
+      # The amount of shared memory the container is allowed to use.
+      #
+      shm-size: 42G
+
+      # Set ulimits.
+      #
+      # All of the below settings are related to ulimits, which are the
+      # old-school, but still surprisingly effective, version of resource
+      # limits, from before we had cgroups.  All of the values take the
+      # form `<soft limit>[:<hard limit>]`, and if `<hard limit>` is not
+      # provided, it is set equal to the specified `<soft limit>`.  The
+      # soft limit must be less than or equal to the hard limit.
+      #
+      # See `getrlimit`(2) for what each limit means, as well as
+      # https://docs.docker.com/engine/reference/commandline/#set-ulimits-in-container---ulimit
+      # for Moby-specific restrictions and caveats.  As an additional
+      # undocumented caveat, if you want to set no limit for a resource,
+      # specify the string "unlimited".
+      #
+      # No value, for hard *or* soft limits, can be set higher than the
+      # hard limits for the `dockerd` process, although you won't know
+      # that you've broken the limits until `moby-derp` tries to start the
+      # container and the wheels fall off.
+      #
+      ulimit-core: 1:2
+      ulimit-cpu: 3:4
+      ulimit-data: 5:6
+      ulimit-fsize: 7:8
+      ulimit-memlock: 9:10
+      ulimit-msgqueue: 11:12
+      ulimit-nofile: 13:14
+      ulimit-rttime: 15:16
+      ulimit-stack: 17:18
+
+# SECTION 2: POD-LEVEL CONFIGURATION
+#
+# The remainder of the configuration items in this file correspond to settings
+# which apply to the pod -- either defaults for all containers in the pod, or
+# else settings which only apply to the "root" container in the pod (the container
+# which holds the networking, IPC, and PID namespaces).
+
+# Set a custom hostname for the container.
+#
+# The default is `<podname>-<host hostname>`, which works surprisingly well
+# in a majority of cases.  It's certainly less wild than the Moby default
+# of the short container ID.
+#
+hostname: bobtown
+
+# Common environment which will apply to all containers.
+#
+# These environment variables will be set for all containers, including the
+# pod "root" container.  Individual containers can override the value for an
+# environment variable, by setting their own value, but they *cannot* cause
+# an environment variable to be unset.
+#
+common_environment:
+  # As is the case for container-level environment variables, each key/value
+  # pair in the map is one environment variable name to value mapping.
+  #
+  AWESOME: yes
+
+# Common labels which will apply to all containers.
+#
+# These labels will be applied to every container in the pod, including the
+# pod "root" container.  Like common environment variables, an individual
+# container can override the value of a common label, but cannot cause the
+# label to be unset entirely.
+#
+common_labels:
+  mah_pod: is on fire
+
+# Labels that *only* apply to the "root" container of the pod.
+#
+# Some labels, often those associated with a container's network config
+# (like service discovery), should only be applied to the pod's "root"
+# container.  Those labels should be defined here.
+#
+root_labels:
+  service: over here
+
+# Common mount definitions that should apply to all containers.
+#
+# If you have a mount that every container in the pod should have access
+# to, you really don't want to have to specify it every time.  Instead,
+# you can put them here.  The format is the same as the per-container
+# `mounts` option.
+#
+common_mounts:
+  - source: app
+    target: /app
+  - source: static-assets
+    target: /app/public
+    readonly: true
+
+# A list of ports in the pod to expose.
+#
+# Marking a port as "exposed" interacts with Moby's "publish all" option,
+# as well as with service advertisement systems.
+#
+expose:
+  - 80
+  - 443
+  - 1337
+
+# A list of port publishing specifications.
+#
+# If you wish to use Moby's port forward/proxying mechanisms, you do that by
+# "publishing" the port(s) you want to use.  Note that, to prevent errant pods
+# from capturing ports they're not supposed to, by default pods can only publish
+# to ephemeral ports (no `hostPort` specification).  If a particular pod
+# *should* be able to publish a specific host port, it needs to be whitelisted
+# in the system-wide configuration (see the `port_whitelist` documentation
+# in the `moby-derp` README).
+#
+publish:
+  - :80
+  - :1234-1237
+
+# If you have a burning desire to have all exposed ports automatically published
+# to (not-so-)randomly chosen ephemeral ports, you can set this option to `true`.
+#
+publish_all: true

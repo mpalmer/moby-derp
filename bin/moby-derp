@@ -1,0 +1,56 @@
+#!/usr/bin/env ruby
+
+require "moby_derp/system_config"
+require "moby_derp/pod_config"
+require "moby_derp/pod"
+
+require "docker-api"
+
+if ARGV.length != 1
+	$stderr.puts "No config file specified"
+	exit 1
+end
+
+logger = Logger.new($stdout)
+logger.formatter = ->(s, t, p, m) { "#{m}\n" }
+
+case ENV["MOBY_DERP_LOG_LEVEL"]
+when /\Adebug|info|warn|error\z/i
+  logger.level = Logger.const_get(ENV["MOBY_DERP_LOG_LEVEL"].upcase.to_sym)
+when /\Atrace\z/i
+  logger.level = Logger::DEBUG
+  require "tracer"
+  Tracer.add_filter { |_e, _f, _l, _id, _b, klass, *_| klass.to_s =~ /MobyDerp/ }
+  Tracer.on
+else
+  logger.level = Logger::INFO
+end
+
+begin
+  system_config_file = ENV["MOBY_DERP_SYSTEM_CONFIG_FILE"] || "/etc/moby-derp.conf"
+  system_config = MobyDerp::SystemConfig.new(system_config_file, Docker.info, logger)
+rescue MobyDerp::ConfigurationError => ex
+  $stderr.puts "There was an error reading the system config file #{system_config_file}: #{ex.message}"
+  exit 1
+rescue Excon::Error::Socket
+  $stderr.puts "Could not connect to the Moby server.  Is it running?"
+  exit 1
+end
+
+begin
+  pod_config = MobyDerp::PodConfig.new(ARGV.first, system_config)
+rescue MobyDerp::ConfigurationError => ex
+  $stderr.puts "There was an error reading the pod config file #{ARGV.first}: #{ex.message}"
+  exit 1
+end
+
+pod = MobyDerp::Pod.new(pod_config)
+
+begin
+  pod.run
+rescue MobyDerp::Error => ex
+  $stderr.puts "There was an error derping #{pod.name}: #{ex.message}"
+  exit 1
+end
+
+exit 0
