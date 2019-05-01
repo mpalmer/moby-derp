@@ -122,6 +122,13 @@ containers:
     #
     stop_timeout: 42
 
+    # The default user under which commands in the container should be run.
+    # Can be `<user>`, `<user>:<group>`, or even `:<group>`, and the user
+    # and group can either be a name (which must exist in the *container's*
+    # `/etc/passwd` / `/etc/group` file), or a numeric ID.
+    #
+    user: fred:flintstone
+
     # Adjust the container's restart policy.
     #
     restart: on-failure:42

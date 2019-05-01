@@ -104,6 +104,11 @@ describe MobyDerp::ContainerConfig do
 		"stop_timeout is negative" =>
 			{ stop_timeout: -42 },
 
+		"user spec isn't a string" =>
+			{ user: { "uid" => 42, "gid" => 31337 } },
+		"user spec doesn't match the required format" =>
+			{ user: "something funny" },
+
 		"restart isn't a string" =>
 			{ restart: { "on-failure" => 42 } },
 		"restart isn't a recognised string" =>

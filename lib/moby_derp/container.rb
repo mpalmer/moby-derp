@@ -92,6 +92,10 @@ module MobyDerp
 				params["StopSignal"]  = @config.stop_signal
 				params["StopTimeout"] = @config.stop_timeout
 
+				if @config.user
+					params["User"] = @config.user
+				end
+
 				if @config.readonly
 					params["HostConfig"]["ReadonlyRootfs"] = true
 				end

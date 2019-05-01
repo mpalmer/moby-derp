@@ -400,6 +400,10 @@ describe MobyDerp::Container do
 					},
 				},
 			],
+			"user set" => [
+				{ user: "bob:12345" },
+				{ "User" => "bob:12345" },
+			],
 			"limited CPU" => [
 				{ limits: { "cpus" => 1.9 } },
 				{

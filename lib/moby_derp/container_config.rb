@@ -7,7 +7,7 @@ require "docker-api"
 module MobyDerp
 	class ContainerConfig
 		attr_reader :name, :image, :update_image, :command, :environment, :mounts,
-		            :labels, :readonly, :stop_signal, :stop_timeout, :restart, :limits
+		            :labels, :readonly, :stop_signal, :stop_timeout, :user, :restart, :limits
 
 		def initialize(system_config:,
 		               pod_config:,
@@ -21,13 +21,14 @@ module MobyDerp
 		               readonly: false,
 		               stop_signal: "SIGTERM",
 		               stop_timeout: 10,
+		               user: nil,
 		               restart: "no",
 		               limits: {}
 		              )
 			@system_config, @pod_config, @name, @image = system_config, pod_config, "#{pod_config.name}.#{container_name}", image
 
 			@update_image, @command, @environment, @mounts, @labels = update_image, command, environment, mounts, labels
-			@readonly, @stop_signal, @stop_timeout, @restart = readonly, stop_signal, stop_timeout, restart
+			@readonly, @stop_signal, @stop_timeout, @user, @restart = readonly, stop_signal, stop_timeout, user, restart
 			@limits = limits
 
 			validate_image
@@ -39,6 +40,7 @@ module MobyDerp
 			validate_readonly
 			validate_stop_signal
 			validate_stop_timeout
+			validate_user
 			validate_restart
 			validate_limits
 		end
@@ -146,6 +148,15 @@ module MobyDerp
 			if @stop_timeout < 0
 				raise ConfigurationError,
 				      "stop_timeout cannot be negative"
+			end
+		end
+
+		def validate_user
+			return if @user.nil?
+
+			unless @user =~ /\A([a-zA-Z0-9_-]+)?(:[a-zA-Z0-9_-]+)?\z/
+				raise ConfigurationError,
+				      "invalid user specification"
 			end
 		end
 
