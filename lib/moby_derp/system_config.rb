@@ -4,16 +4,18 @@ require "safe_yaml"
 
 module MobyDerp
 	class SystemConfig < ConfigFile
-		attr_reader :mount_root, :port_whitelist, :network_name, :cpu_count, :cpu_bits
+		attr_reader :mount_root, :port_whitelist, :network_name, :use_host_resolv_conf,
+		            :cpu_count, :cpu_bits
 
 		def initialize(filename, moby_info, logger)
 			@logger = logger
 
 			super(filename)
 
-			@mount_root     = @config["mount_root"]
-			@port_whitelist = stringify_keys(@config["port_whitelist"] || {})
-			@network_name   = @config["network_name"] || "bridge"
+			@mount_root           = @config["mount_root"]
+			@port_whitelist       = stringify_keys(@config["port_whitelist"] || {})
+			@network_name         = @config["network_name"] || "bridge"
+			@use_host_resolv_conf = @config["use_host_resolv_conf"] || false
 
 			@cpu_count = moby_info["NCPU"]
 			# As far as I can tell, the only 32-bit platform Moby supports is
@@ -33,6 +35,11 @@ module MobyDerp
 			unless @network_name.is_a?(String)
 				raise ConfigurationError,
 				      "network_name must be a string"
+			end
+
+			unless [true, false].include?(@use_host_resolv_conf)
+				raise ConfigurationError,
+				      "use_host_resolv_conf must be true or false"
 			end
 
 			unless File.directory?(@mount_root)

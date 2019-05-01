@@ -52,6 +52,7 @@ describe MobyDerp::PodConfig do
 		allow(system_config).to receive(:mount_root).and_return("/srv/docker")
 		allow(system_config).to receive(:port_whitelist).and_return({})
 		allow(system_config).to receive(:network_name).and_return("CBS")
+		allow(system_config).to receive(:use_host_resolv_conf).and_return(false)
 		allow(system_config).to receive(:logger).and_return(logger)
 	end
 
@@ -307,6 +308,21 @@ describe MobyDerp::PodConfig do
 
 		it "allows the configuration" do
 			expect { pod_config }.to_not raise_error
+		end
+	end
+
+	context "when use_host_resolv_conf is true" do
+		let(:config) { minimal_config }
+		before(:each) do
+			allow(system_config).to receive(:use_host_resolv_conf).and_return(true)
+		end
+
+		it "includes a common mount for /etc/resolv.conf" do
+			expect(pod_config.common_mounts.length).to eq(1)
+			mount = pod_config.common_mounts.first
+			expect(mount.source).to eq("/etc/resolv.conf")
+			expect(mount.target).to eq("/etc/resolv.conf")
+			expect(mount.readonly).to eq(true)
 		end
 	end
 

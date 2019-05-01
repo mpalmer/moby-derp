@@ -23,7 +23,7 @@ module MobyDerp
 				      "path traversal detected -- nice try, buddy"
 			end
 
-			if @source =~ %r{^(/|~)}
+			if @source =~ %r{^(/|~)} && @source != "/etc/resolv.conf"
 				raise ConfigurationError,
 				      "mount sources can only be relative paths"
 			end

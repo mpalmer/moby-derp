@@ -107,6 +107,23 @@ The keys are:
   mapped by a pod, and only the pod named in the mapping can publish on the
   specified port.
 
+* **`network_name`**: specify a network name to attach all pods to, if you
+  don't like Moby's default `bridge` network.
+
+* **`use_host_resolv_conf`**: Moby has some... strange ideas about what
+  constitutes DNS records (like thinking that PTR records can only be for
+  rDNS).  At the same time, you cannot, by purely Moby-sanctioned means,
+  disable the spectacularly broken DNS proxy that is inflicted on you if you
+  decide to use a custom network.  The only feasible workaround that I have
+  discovered is to straight-up bind mount the host's `/etc/resolv.conf` into
+  every single container.  If you, too, like your DNS resolution to work
+  properly when you use a non-default network, set this option to true.
+
+  Bear in mind, when constructing your host's `/etc/resolv.conf` file, that the
+  host's conception of "localhost" is different to each container's
+  "localhost"; so pointing to your local caching resolver using `127.0.0.1`
+  will not end in happiness and puppies.
+
 If you wish to modify the location of the `moby-derp` system-wide configuration
 file, you can do so by setting the `MOBY_DERP_SYSTEM_CONFIG_FILE` environment
 variable.  Note, however, that it is a terrible idea to let ordinary users control

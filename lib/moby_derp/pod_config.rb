@@ -55,6 +55,15 @@ module MobyDerp
 			@common_mounts = @config.fetch("common_mounts", [])
 			@expose        = @config.fetch("expose", [])
 			@publish       = @config.fetch("publish", [])
+
+			if @system_config.use_host_resolv_conf
+				@common_mounts << {
+					"source"   => "/etc/resolv.conf",
+					"target"   => "/etc/resolv.conf",
+					"readonly" => true
+				}
+			end
+
 			validate_common_mounts
 			validate_expose
 			validate_publish

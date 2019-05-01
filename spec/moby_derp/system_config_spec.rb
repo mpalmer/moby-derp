@@ -36,6 +36,10 @@ describe MobyDerp::SystemConfig do
 		expect(MobyDerp::SystemConfig.new(config_filename, moby_info, logger).network_name).to eq("bridge")
 	end
 
+	it "sets a default for using the host's resolv.conf" do
+		expect(MobyDerp::SystemConfig.new(config_filename, moby_info, logger).use_host_resolv_conf).to eq(false)
+	end
+
 	context "with a port whitelist" do
 		let(:config_file_contents) { "mount_root: /tmp\nport_whitelist:\n  80: some-pod\n  443: some-pod" }
 
@@ -49,6 +53,14 @@ describe MobyDerp::SystemConfig do
 
 		it "sets the network name" do
 		  expect(MobyDerp::SystemConfig.new(config_filename, moby_info, logger).network_name).to eq("bobby")
+		end
+	end
+
+	context "with use_host_resolv_conf set" do
+		let(:config_file_contents) { "mount_root: /tmp\nuse_host_resolv_conf: true" }
+
+		it "sets the network name" do
+		  expect(MobyDerp::SystemConfig.new(config_filename, moby_info, logger).use_host_resolv_conf).to eq(true)
 		end
 	end
 
@@ -83,6 +95,8 @@ describe MobyDerp::SystemConfig do
 			"42.5",
 		"when network_name isn't a string" =>
 			"mount_root: /tmp\nnetwork_name:\n- one\n",
+		"when use_host_resolv_conf isn't a boolean" =>
+			"mount_root: /tmp\nuse_host_resolv_conf: naaaaaah\n",
 	}.each do |desc, config|
 		context "when #{desc}" do
 			let(:config_file_contents) { config }
