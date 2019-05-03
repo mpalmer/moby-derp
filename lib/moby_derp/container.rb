@@ -190,7 +190,7 @@ module MobyDerp
 		def mount_structure(mount)
 			{
 				"Type"     => "bind",
-				"Source"   => "#{@pod.mount_root}/#{mount.source}",
+				"Source"   => mount.source[0] == "/" ? mount.source : "#{@pod.mount_root}/#{mount.source}",
 				"Target"   => mount.target,
 				"ReadOnly" => mount.readonly,
 			}
