@@ -11,7 +11,7 @@ if ARGV.length != 1
 	exit 1
 end
 
-logger = Logger.new($stdout)
+logger = Logger.new($stderr)
 logger.formatter = ->(s, t, p, m) { "#{m}\n" }
 
 case ENV["MOBY_DERP_LOG_LEVEL"]
