@@ -44,6 +44,8 @@ rescue MobyDerp::ConfigurationError => ex
   exit 1
 end
 
+Docker.options = { read_timeout: 86400 }
+
 pod = MobyDerp::Pod.new(pod_config)
 
 begin
