@@ -3,6 +3,7 @@ require_relative "./error"
 require_relative "./mount"
 
 require "docker-api"
+require "shellwords"
 
 module MobyDerp
 	class ContainerConfig
@@ -66,7 +67,10 @@ module MobyDerp
 		def validate_command
 			case @command
 			when String
-				true
+				# Despite the Docker Engine API spec saying you can pass a string,
+				# if you do it doesn't get parsed into arguments... so that's pretty
+				# fucking useless.
+				@command = Shellwords.split(@command)
 			when Array
 				unless @command.all? { |c| String === c }
 					raise ConfigurationError, "all elements of the command array must be strings"

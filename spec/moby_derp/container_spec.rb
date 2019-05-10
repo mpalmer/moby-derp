@@ -356,8 +356,8 @@ describe MobyDerp::Container do
 				{},
 			],
 			"a command string" => [
-				{ command: "--foo --bar" },
-				{ "Cmd" => "--foo --bar" },
+				{ command: "--foo --bar 'baz wombat'" },
+				{ "Cmd" => ["--foo", "--bar", "baz wombat"] },
 			],
 			"a command array" => [
 				{ command: ["--foo", "--bar"] },
