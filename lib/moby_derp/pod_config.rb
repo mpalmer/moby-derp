@@ -21,8 +21,8 @@ module MobyDerp
 		            :publish,
 		            :publish_all,
 		            :mount_root,
-						:system_config,
-						:logger
+		            :system_config,
+		            :logger
 
 		def initialize(filename, system_config)
 			@logger = system_config.logger
