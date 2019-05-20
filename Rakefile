@@ -34,6 +34,7 @@ RSpec::Core::RakeTask.new :test do |t|
 	t.pattern = "spec/**/*_spec.rb"
 end
 
+desc "Run end-to-end tests"
 task :smoke_tests do
 	sh "bats smoke_tests"
 end
