@@ -21,6 +21,7 @@ describe MobyDerp::Pod do
 		allow(pod_config).to receive(:common_mounts).and_return([])
 		allow(pod_config).to receive(:common_labels).and_return({})
 		allow(pod_config).to receive(:common_environment).and_return({})
+		allow(pod_config).to receive(:expose).and_return([])
 		allow(Docker::Container).to receive(:get).and_raise(Docker::Error::NotFoundError)
 		allow(Docker::Container).to receive(:create).and_return(mock_docker_container)
 		allow(mock_docker_container).to receive(:start!).and_return(mock_docker_container)
@@ -123,7 +124,7 @@ describe MobyDerp::Pod do
 					.and_return(
 						"Config" => {
 							"Labels" => {
-								"org.hezmatt.moby-derp.config-hash" => "sha256:0a23c36067b96e6751f207b266180229a02121e2601beb310a399059ac1b3f2d",
+								"org.hezmatt.moby-derp.config-hash" => "sha256:211938e335e1252a548fb313fdfd381a67237755a66f747abb334e1cd196514d",
 								"org.hezmatt.moby-derp.pod-name"    => "mullet",
 							},
 						}

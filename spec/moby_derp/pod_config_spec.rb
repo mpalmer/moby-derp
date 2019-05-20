@@ -189,7 +189,7 @@ describe MobyDerp::PodConfig do
 		end
 
 		it "stores the exposed ports" do
-			expect(pod_config.expose).to eq(["80", "443", "53/udp"])
+			expect(pod_config.expose).to eq(["80/tcp", "443/tcp", "53/udp"])
 		end
 
 		it "stores the published ports" do

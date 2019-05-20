@@ -23,7 +23,7 @@ EOF
 teardown() {
 	for i in $(docker ps -a --format='{{.Names}}'); do
 		if docker container inspect $i --format='{{.Config.Labels}}' | grep -q moby-derp-smoke-test; then
-			docker rm -f $i
+			docker rm -f $i >/dev/null
 		fi
 	done
 }

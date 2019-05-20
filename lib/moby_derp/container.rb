@@ -71,6 +71,7 @@ module MobyDerp
 							}
 						}
 					end
+					params["ExposedPorts"] = Hash[@pod.expose.map { |ex| [ex, {}] }]
 				else
 					params["HostConfig"] = {
 						"NetworkMode"   => "container:#{@pod.root_container_id}",

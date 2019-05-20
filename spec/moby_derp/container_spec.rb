@@ -584,6 +584,7 @@ describe MobyDerp::Container do
 			before(:each) do
 				allow(pod).to receive(:network_name).and_return("bridge")
 				allow(pod).to receive(:hostname).and_return("bob-spec")
+				allow(pod).to receive(:expose).and_return([])
 				allow(Docker::Network).to receive(:get).with("bridge").and_return(mock_docker_network)
 				allow(mock_docker_network)
 					.to receive(:info)
@@ -704,6 +705,23 @@ describe MobyDerp::Container do
 					it "raises an appropriate exception" do
 						expect { container.run }.to raise_error(MobyDerp::ContainerError)
 					end
+				end
+			end
+
+			context "with exposed ports" do
+				before(:each) do
+					allow(pod).to receive(:expose).and_return(["80/tcp", "53/udp"])
+				end
+
+				it "sets exposed ports in the root container" do
+					expect(Docker::Container)
+						.to receive(:create) do |create_options|
+						expect(create_options).to have_key("ExposedPorts")
+						expect(create_options["ExposedPorts"]).to eq({"80/tcp" => {}, "53/udp" => {}})
+						mock_docker_container
+					end
+
+					container.run
 				end
 			end
 		end

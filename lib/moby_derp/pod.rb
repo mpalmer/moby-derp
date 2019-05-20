@@ -68,6 +68,10 @@ module MobyDerp
 			@config.hostname
 		end
 
+		def expose
+			@config.expose
+		end
+
 		private
 
 		def root_container

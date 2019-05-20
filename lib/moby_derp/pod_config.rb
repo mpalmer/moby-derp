@@ -181,18 +181,23 @@ module MobyDerp
 				      "expose must be an array"
 			end
 
-			@expose.map!(&:to_s)
-
-			@expose.each do |e|
+			@expose.map! do |e|
+				e = e.to_s
 				unless e.is_a?(String) && e =~ %r{\A\d+(/(tcp|udp))?\z}
 					raise ConfigurationError,
 					      "exposed ports must be integers, with an optional protocol specifier (got #{e.inspect})"
+				end
+
+				if $1.nil?
+					e += "/tcp"
 				end
 
 				if e.to_i < 1 || e.to_i > 65535
 					raise ConfigurationError,
 					      "exposed port #{e} is out of range (expected 1-65535)"
 				end
+
+				e
 			end
 		end
 
