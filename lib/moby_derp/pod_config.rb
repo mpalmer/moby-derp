@@ -10,6 +10,18 @@ module MobyDerp
 	class PodConfig < ConfigFile
 		include LoggingHelpers
 
+		VALID_CONFIG_KEYS = %w{
+			containers
+			hostname
+			common_environment
+			common_labels
+			root_labels
+			common_mounts
+			expose
+			publish
+			publish_all
+		}
+
 		attr_reader :name,
 		            :containers,
 		            :hostname,
@@ -34,6 +46,10 @@ module MobyDerp
 			@name = File.basename(filename, ".*")
 			validate_name
 
+			unless (bad_keys = @config.keys - VALID_CONFIG_KEYS).empty?
+				raise ConfigurationError,
+				      "Invalid pod configuration key(s): #{bad_keys.inspect}"
+			end
 
 			unless @config.has_key?("containers")
 				raise ConfigurationError,

@@ -289,6 +289,9 @@ describe MobyDerp::PodConfig do
 
 		"publish_all isn't a boolean" =>
 			{ "publish_all" => "yes please" },
+
+		"there is an invalid top-level key" =>
+			{ "flibbety" => "gibbets" },
 	}.each do |desc, snippet|
 		context "when #{desc}" do
 			let(:config) { full_config.merge(snippet) }
