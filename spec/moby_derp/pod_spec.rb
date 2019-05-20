@@ -20,6 +20,7 @@ describe MobyDerp::Pod do
 		allow(pod_config).to receive(:network_name).and_return("bridge")
 		allow(pod_config).to receive(:common_mounts).and_return([])
 		allow(pod_config).to receive(:common_labels).and_return({})
+		allow(pod_config).to receive(:root_labels).and_return({})
 		allow(pod_config).to receive(:common_environment).and_return({})
 		allow(pod_config).to receive(:expose).and_return([])
 		allow(Docker::Container).to receive(:get).and_raise(Docker::Error::NotFoundError)

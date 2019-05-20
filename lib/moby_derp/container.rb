@@ -127,7 +127,9 @@ module MobyDerp
 				params["Labels"] = @pod.common_labels.merge(@config.labels)
 				params["Labels"]["org.hezmatt.moby-derp.pod-name"] = @pod.name
 
-				unless @root_container
+				if @root_container
+					params["Labels"] = @pod.root_labels.merge(params["Labels"])
+				else
 					params["Labels"]["org.hezmatt.moby-derp.root-container-id"] = @pod.root_container_id
 				end
 			end

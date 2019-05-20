@@ -28,6 +28,7 @@ describe MobyDerp::Container do
 		allow(pod).to receive(:name).and_return("spec-pod")
 		allow(pod).to receive(:root_container_id).and_return("xyz987")
 		allow(pod).to receive(:common_labels).and_return({})
+		allow(pod).to receive(:root_labels).and_return({})
 		allow(pod).to receive(:common_environment).and_return({})
 		allow(pod).to receive(:common_mounts).and_return([])
 		allow(pod).to receive(:mount_root).and_return("/srv/docker/my-pod")
@@ -718,6 +719,24 @@ describe MobyDerp::Container do
 						.to receive(:create) do |create_options|
 						expect(create_options).to have_key("ExposedPorts")
 						expect(create_options["ExposedPorts"]).to eq({"80/tcp" => {}, "53/udp" => {}})
+						mock_docker_container
+					end
+
+					container.run
+				end
+			end
+
+			context "with core labels" do
+				before(:each) do
+					allow(pod).to receive(:root_labels).and_return("freddie" => "mercury")
+				end
+
+				it "sets labels in the root container" do
+					expect(Docker::Container)
+						.to receive(:create) do |create_options|
+						expect(create_options).to have_key("Labels")
+						expect(create_options["Labels"]).to have_key("freddie")
+						expect(create_options["Labels"]["freddie"]).to eq("mercury")
 						mock_docker_container
 					end
 

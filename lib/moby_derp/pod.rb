@@ -48,6 +48,10 @@ module MobyDerp
 			@config.common_labels
 		end
 
+		def root_labels
+			@config.root_labels
+		end
+
 		def common_environment
 			@config.common_environment
 		end
