@@ -25,7 +25,6 @@ Gem::Specification.new do |s|
 
 	s.add_runtime_dependency "docker-api"
 	s.add_runtime_dependency "json-canonicalization"
-	s.add_runtime_dependency "safe_yaml"
 
 	s.add_development_dependency 'bundler'
 	s.add_development_dependency 'deep_merge'

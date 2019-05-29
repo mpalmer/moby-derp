@@ -1,7 +1,5 @@
 require_relative "./config_file"
 
-require "safe_yaml"
-
 module MobyDerp
 	class SystemConfig < ConfigFile
 		attr_reader :mount_root, :port_whitelist, :network_name, :use_host_resolv_conf,

@@ -1,7 +1,7 @@
 require_relative "./error"
 require_relative "./logging_helpers"
 
-require "safe_yaml"
+require "yaml"
 
 module MobyDerp
 	class ConfigFile
@@ -12,7 +12,7 @@ module MobyDerp
 		def initialize(filename)
 			begin
 				@logger.debug(logloc) { "Reading configuration file #{filename}" }
-				@config = SafeYAML.load(File.read(filename))
+				@config = YAML.safe_load(File.read(filename))
 			rescue Errno::ENOENT
 				raise ConfigurationError,
 				      "file does not exist"

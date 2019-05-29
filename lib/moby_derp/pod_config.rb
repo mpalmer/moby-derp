@@ -3,7 +3,6 @@ require_relative "./container_config"
 require_relative "./logging_helpers"
 require_relative "./mount"
 
-require "safe_yaml"
 require "socket"
 
 module MobyDerp
