@@ -134,7 +134,7 @@ wrapper script, like this:
 
     set -e
 
-    MOBY_DERP_SYSTEM_CONFIG_FILE=/opt/srv/etc/moby-derp/moby-derp.yaml
+    export MOBY_DERP_SYSTEM_CONFIG_FILE=/opt/srv/etc/moby-derp/moby-derp.yaml
 
     exec /usr/local/bin/moby-derp "$@"
 
@@ -185,7 +185,7 @@ to `moby-derp`.  This means that, yes, different users need to use different
 filenames.  The benefit of this is that the `sudo` configuration becomes a lot
 easier to audit -- the pod name is right there.
 
-This means that no matter a user does, they cannot have any effect on any
+This means that no matter what a user does, they cannot have any effect on any
 container which is not named for the pod they're manipulating.  There are also
 safety valves around `moby-derp`-managed containers being labelled as such, so
 that in the event that someone does inadvertently name a container in such a
@@ -220,7 +220,7 @@ still publish to ephemeral ports (using the `:containerPort` syntax, or
 `publish_all: true`) if they wish.
 
 If a pod *does* need to bind to a specific host port, then that pod/port pair
-should be whitelisted in the system configuration file.
+should be whitelisted in the [system configuration file](#system-configuration).
 
 
 # Contributing
