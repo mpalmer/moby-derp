@@ -5,10 +5,17 @@ module MobyDerp
 		attr_reader :mount_root, :port_whitelist, :network_name, :use_host_resolv_conf,
 		            :cpu_count, :cpu_bits
 
-		def initialize(filename, moby_info, logger)
+		def initialize(config_data_or_filename, moby_info, logger)
 			@logger = logger
 
-			super(filename)
+			case config_data_or_filename
+			when String
+				super(config_data_or_filename)
+			when Hash
+				@config = stringify_keys(config_data_or_filename)
+			else
+				raise ArgumentError, "Unsupported type for config_data_or_filename parameter"
+			end
 
 			@mount_root           = @config["mount_root"]
 			@port_whitelist       = stringify_keys(@config["port_whitelist"] || {})

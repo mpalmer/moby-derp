@@ -40,6 +40,14 @@ describe MobyDerp::SystemConfig do
 		expect(MobyDerp::SystemConfig.new(config_filename, moby_info, logger).use_host_resolv_conf).to eq(false)
 	end
 
+	it "accepts a config hash" do
+		expect { MobyDerp::SystemConfig.new({ mount_root: "/tmp" }, moby_info, logger) }.to_not raise_error
+	end
+
+	it "does not like other data types" do
+		expect { MobyDerp::SystemConfig.new(42, moby_info, logger) }.to raise_error(ArgumentError)
+	end
+
 	context "with a port whitelist" do
 		let(:config_file_contents) { "mount_root: /tmp\nport_whitelist:\n  80: some-pod\n  443: some-pod" }
 
