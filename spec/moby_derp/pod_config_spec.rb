@@ -230,6 +230,8 @@ describe MobyDerp::PodConfig do
 	{
 		"containers is not a hash" =>
 			{ "containers" => "tupperware" },
+		"container spec is not a hash" =>
+			{ "containers" => { "image" => "something/funny" } },
 		"a container name is invalid" =>
 			{ "containers" => { "a.b.c" => { "image" => "foo" } } },
 		"container spec is missing required keyword" =>

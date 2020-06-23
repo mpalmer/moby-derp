@@ -115,6 +115,11 @@ module MobyDerp
 					raise ConfigurationError,
 						"container name #{name.inspect} is invalid (must contain only alphanumerics, underscores, and hyphens)"
 				end
+
+				unless data.is_a?(Hash)
+					raise ConfigurationError,
+					      "container data must be a hash"
+				end
 			end
 
 			begin
