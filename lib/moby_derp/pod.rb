@@ -18,6 +18,20 @@ module MobyDerp
 
 			@logger.debug(logloc) { "Root container ID is #{@root_container_id}" }
 
+			desired_container_names = @config.containers.map(&:name)
+
+			Docker::Container.all(all: true).each do |c|
+				c_name = c.info["Names"].first.sub(/^\//, '')
+
+				if c.info["Labels"]["org.hezmatt.moby-derp.pod-name"] == name &&
+						!c.info["Labels"]["org.hezmatt.moby-derp.root-container-id"].nil? &&
+						!desired_container_names.include?(c_name.split(".", 2).last)
+					@logger.info(logloc) { "Removing stale container #{c_name}" }
+					c.stop
+					c.delete
+				end
+			end
+
 			@config.containers.each do |cfg|
 				@logger.info(logloc) { "Checking container #{cfg.name}" }
 

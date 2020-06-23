@@ -151,6 +151,8 @@ describe MobyDerp::Pod do
 
 			before(:each) do
 				allow(pod_config).to receive(:containers).and_return([mock_container_config] * 3)
+				allow(mock_container_config).to receive(:name).and_return("bob")
+				allow(mock_sub_container).to receive(:run)
 			end
 
 			it "runs those containers, too" do
@@ -169,8 +171,34 @@ describe MobyDerp::Pod do
 					expect { pod.run }.to raise_error(MobyDerp::ContainerError, /error while running container pod-fun/)
 				end
 			end
-		end
 
-		xit "deletes a pod-tagged container that no longer exists"
+			context "with an existing labelled container that isn't in the pod" do
+				before(:each) do
+					allow(Docker::Container).to receive(:all).and_return([mock_docker_container])
+					allow(mock_docker_container).to receive(:info).and_return(
+						"Names" => ["/mullet.gorn"],
+						"Labels" => {
+							"org.hezmatt.moby-derp.pod-name" => "mullet",
+							"org.hezmatt.moby-derp.root-container-id" => "xyzzy123"
+						}
+					)
+					allow(mock_docker_container).to receive(:stop)
+					allow(mock_docker_container).to receive(:delete)
+				end
+
+				it "asks for a list of all containers" do
+					expect(Docker::Container).to receive(:all).with(all: true)
+
+					pod.run
+				end
+
+				it "stops and deletes the now-obsolete container" do
+					expect(mock_docker_container).to receive(:stop)
+					expect(mock_docker_container).to receive(:delete)
+
+					pod.run
+				end
+			end
+		end
 	end
 end
