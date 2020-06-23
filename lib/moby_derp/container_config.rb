@@ -1,4 +1,4 @@
-require_relative "../freedom_patches/docker/image"
+require_relative "./freedom_patches/docker/image"
 require_relative "./error"
 require_relative "./mount"
 

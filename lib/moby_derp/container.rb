@@ -5,6 +5,8 @@ require "docker-api"
 require "ipaddr"
 require "json/canonicalization"
 
+require_relative "./freedom_patches/docker/credential"
+
 module MobyDerp
 	class Container
 		include LoggingHelpers
