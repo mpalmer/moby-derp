@@ -213,6 +213,33 @@ containers:
       ulimit-rttime: 15:16
       ulimit-stack: 17:18
 
+    # If you're a bit suss as to whether or not one of your containers will
+    # successfully start up, you can use the following section to define a
+    # start-time health checking regime.
+    #
+    # How it works is that the defined command is run in the container (using
+    # `exec`), and if-and-when that command returns a `0` exit status, the
+    # container is considered to be healthy and we're done.  If the command
+    # returns a non-zero exit status, we wait for `interval` seconds and then
+    # retry.  If the command executes `attempts` times without receiving a `0`
+    # exit status, the container is considered "failed", and no further
+    # containers in the pod will be processed, and the `moby-derp` execution
+    # will itself exit with a non-zero status.
+    startup_health_check:
+      # The command to run inside the container via `exec`.  You can specify
+      # this as a string, or as an array of strings if you prefer to avoid
+      # shell quoting hell.
+      command: '/usr/local/bin/r-u-ok'
+
+      # How many seconds to wait between invocations of the command, when
+      # it fails.  Can be any non-negative number.  Defaults to 3.
+      interval: 3
+
+      # How many times to attempt to execute the health-check command before
+      # declaring the container hopelessly busticated, and aborting the
+      # `moby-derp` run.  Must be a positive integer.  Defaults to 10.
+      attempts: 10
+
 # SECTION 2: POD-LEVEL CONFIGURATION
 #
 # The remainder of the configuration items in this file correspond to settings

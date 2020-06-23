@@ -191,6 +191,27 @@ describe MobyDerp::ContainerConfig do
 		"limits.shm-size uses an invalid suffix" =>
 			{ limits: { "shm-size" => "9001z" } },
 
+		"health check isn't a hash" =>
+			{ startup_health_check: "/usr/bin/false" },
+		"health check command is missing" =>
+			{ startup_health_check: {} },
+		"health check command isn't a string or array" =>
+			{ startup_health_check: { command: { "foo" => "bar" } } },
+		"element of health check command array isn't a string" =>
+			{ startup_health_check: { command: ["foo", "bar", 42] } },
+		"health check interval isn't a number" =>
+			{ startup_health_check: { command: "bob", interval: "whatever" } },
+		"health check interval is negative" =>
+			{ startup_health_check: { command: "bob", interval: -42 } },
+		"health check attempts isn't a number" =>
+			{ startup_health_check: { command: "bob", attempts: "infinite" } },
+		"health check attempts isn't an integer" =>
+			{ startup_health_check: { command: "bob", attempts: 3.14159625 } },
+		"health check attempts is zero" =>
+			{ startup_health_check: { command: "bob", attempts: 0 } },
+		"health check attempts is negative" =>
+			{ startup_health_check: { command: "bob", attempts: -42 } },
+
 	}.each do |desc, opts|
 		context "when #{desc}" do
 			let(:options) { base_options.merge(opts) }

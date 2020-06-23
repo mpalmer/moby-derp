@@ -19,7 +19,7 @@ describe MobyDerp::Container do
 	let(:container_options)     { base_options }
 	let(:container_config)      { MobyDerp::ContainerConfig.new(system_config: system_config, pod_config: pod_config, container_name: container_name, **container_options) }
 	let(:container)             { MobyDerp::Container.new(pod: pod, container_config: container_config) }
-	let(:mock_docker_container) { instance_double(Docker::Container) }
+	let(:mock_docker_container) { instance_double(Docker::Container, "mainmock") }
 
 	before(:each) do
 		allow(system_config).to receive(:cpu_count).and_return(4)
@@ -62,7 +62,6 @@ describe MobyDerp::Container do
 		end
 
 		context "with an existing container with the same config hash" do
-			let(:mock_docker_container) { instance_double(Docker::Container) }
 			before(:each) do
 				allow(Docker::Container).to receive(:get).with("spec-pod.bob").and_return(mock_docker_container)
 				allow(mock_docker_container)
@@ -107,8 +106,10 @@ describe MobyDerp::Container do
 				expect(Docker::Container)
 					.to receive(:create)
 					.with(any_args)
-					.and_return(new_mock_docker_container = instance_double(Docker::Container))
-				expect(new_mock_docker_container).to receive(:start!).with(no_args).and_return(mock_docker_container)
+					.and_return(new_mock_docker_container = instance_double(Docker::Container, "new"))
+				expect(new_mock_docker_container).to receive(:start!).with(no_args).and_return(new_mock_docker_container)
+				expect(mock_docker_container).to_not receive(:id)
+				expect(new_mock_docker_container).to receive(:id).and_return("newnewnewnewnew")
 
 				container.run
 			end
@@ -201,8 +202,10 @@ describe MobyDerp::Container do
 					expect(Docker::Container)
 						.to receive(:create)
 						.with(any_args)
-						.and_return(new_mock_docker_container = instance_double(Docker::Container))
+						.and_return(new_mock_docker_container = instance_double(Docker::Container, "new"))
 					expect(new_mock_docker_container).to receive(:start!).with(no_args).and_return(mock_docker_container)
+					expect(mock_docker_container).to_not receive(:id)
+					expect(new_mock_docker_container).to receive(:id).and_return("newnewnewnewnew")
 
 					container.run
 				end
@@ -338,6 +341,57 @@ describe MobyDerp::Container do
 
 					container.run
 				end
+			end
+		end
+
+		context "with a startup health check set" do
+			let(:container_options) do
+				base_options.merge(startup_health_check: { command: "/usr/bin/bob --opt=val", interval: 2.1, attempts: 3 })
+			end
+
+			before(:each) do
+				allow(Docker::Container).to receive(:create).and_return(mock_docker_container)
+				allow(mock_docker_container).to receive(:exec).and_return([[], [], 0])
+				allow(container).to receive(:sleep)
+				allow(logger).to receive(:warn)
+			end
+
+			it "creates and starts the container as normal" do
+				expect(Docker::Container).to receive(:create)
+				expect(mock_docker_container).to receive(:start!)
+
+				container.run
+			end
+
+			it "runs the health check command afterwards" do
+				expect(mock_docker_container).to receive(:start!).ordered
+				expect(mock_docker_container).to receive(:exec).with(["/usr/bin/bob", "--opt=val"]).and_return([[], [], 0]).ordered
+
+				container.run
+			end
+
+			it "runs the health check multiple times if it fails the first time" do
+				expect(mock_docker_container).to receive(:exec).with(["/usr/bin/bob", "--opt=val"]).and_return([[], [], 42]).ordered
+				expect(container).to receive(:sleep).with(2.1).ordered
+				expect(mock_docker_container).to receive(:exec).with(["/usr/bin/bob", "--opt=val"]).and_return([[], [], 0]).ordered
+
+				container.run
+			end
+
+			it "logs a warning when the health check fails" do
+				expect(mock_docker_container).to receive(:exec).with(["/usr/bin/bob", "--opt=val"]).and_return([[], [], 42]).ordered
+				expect(logger).to receive(:warn).ordered
+				expect(mock_docker_container).to receive(:exec).with(["/usr/bin/bob", "--opt=val"]).and_return([[], [], 0]).ordered
+
+				container.run
+			end
+
+			it "barfs if the health check never succeeds" do
+				allow(mock_docker_container).to receive(:exec).with(["/usr/bin/bob", "--opt=val"]).and_return([[], [], 42])
+
+				expect { container.run }.to raise_error(MobyDerp::StartupHealthCheckError)
+
+				expect(mock_docker_container).to have_received(:exec).exactly(3).times
 			end
 		end
 

@@ -9,6 +9,10 @@ module MobyDerp
 	# Indicates there was a problem manipulating a live container
 	class ContainerError < Error; end
 
+	# Raised when the startup health check has failed spectacularly for
+	# a container
+	class StartupHealthCheckError < Error; end
+
 	# Only appears when an inviolable assertion is invalid, and indicates
 	# there is a bug in the code
 	class BugError < Error; end

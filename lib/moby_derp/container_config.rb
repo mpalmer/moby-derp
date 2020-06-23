@@ -8,7 +8,8 @@ require "shellwords"
 module MobyDerp
 	class ContainerConfig
 		attr_reader :name, :image, :update_image, :command, :environment, :mounts,
-		            :labels, :readonly, :stop_signal, :stop_timeout, :user, :restart, :limits
+		            :labels, :readonly, :stop_signal, :stop_timeout, :user, :restart, :limits,
+		            :startup_health_check
 
 		def initialize(system_config:,
 		               pod_config:,
@@ -24,13 +25,14 @@ module MobyDerp
 		               stop_timeout: 10,
 		               user: nil,
 		               restart: "no",
-		               limits: {}
+		               limits: {},
+		               startup_health_check: nil
 		              )
 			@system_config, @pod_config, @name, @image = system_config, pod_config, "#{pod_config.name}.#{container_name}", image
 
 			@update_image, @command, @environment, @mounts, @labels = update_image, command, environment, mounts, labels
 			@readonly, @stop_signal, @stop_timeout, @user, @restart = readonly, stop_signal, stop_timeout, user, restart
-			@limits = limits
+			@limits, @startup_health_check = limits, startup_health_check
 
 			validate_image
 			validate_update_image
@@ -44,6 +46,7 @@ module MobyDerp
 			validate_user
 			validate_restart
 			validate_limits
+			validate_startup_health_check
 		end
 
 		private
@@ -328,6 +331,51 @@ module MobyDerp
 			else
 				raise ConfigurationError,
 				      "#{name} limit must be a string or an integer"
+			end
+		end
+
+		def validate_startup_health_check
+			if @startup_health_check.nil?
+				# This is fine
+				return
+			end
+
+			unless @startup_health_check.is_a?(Hash)
+				raise ConfigurationError,
+				      "startup_health_check must be a hash"
+			end
+
+			case @startup_health_check[:command]
+			when String
+				@startup_health_check[:command] = Shellwords.split(@startup_health_check[:command])
+			when Array
+				unless @startup_health_check[:command].all? { |c| String === c }
+					raise ConfigurationError, "all elements of the health check command array must be strings"
+				end
+			when NilClass
+				raise ConfigurationError, "health check command must be specified"
+			else
+				raise ConfigurationError,
+				      "health check command must be string or array of strings"
+			end
+
+			@startup_health_check[:interval] ||= 3
+			@startup_health_check[:attempts] ||= 10
+
+			unless Numeric === @startup_health_check[:interval]
+				raise ConfigurationError, "startup health check interval must be a number"
+			end
+
+			if @startup_health_check[:interval] < 0
+				raise ConfigurationError, "startup health check interval cannot be negative"
+			end
+
+			unless Integer === @startup_health_check[:attempts]
+				raise ConfigurationError, "startup health check attempt count must be an integer"
+			end
+
+			if @startup_health_check[:attempts] < 1
+				raise ConfigurationError, "startup health check attempt count must be a positive integer"
 			end
 		end
 

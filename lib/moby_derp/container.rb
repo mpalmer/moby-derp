@@ -43,7 +43,35 @@ module MobyDerp
 			end
 
 			begin
-				Docker::Container.create(hash_labelled(container_creation_parameters)).start!.id
+				c = Docker::Container.create(hash_labelled(container_creation_parameters))
+				c.start!.object_id
+
+				if @config.startup_health_check
+					attempts = @config.startup_health_check[:attempts]
+
+					while attempts > 0
+						stdout, stderr, exitstatus = c.exec(@config.startup_health_check[:command])
+						if exitstatus > 0
+							stdout_lines = stdout.empty? ? [] : ["stdout:"] + stdout.join("\n").split("\n").map { |l| "  #{l}" }
+							stderr_lines = stderr.empty? ? [] : ["stderr:"] + stderr.join("\n").split("\n").map { |l| "  #{l}" }
+							output_lines = stdout_lines + stderr_lines
+							@logger.warn(logloc) { "Startup health check failed on #{container_name} with status #{exitstatus}." + (output_lines.empty? ? "" : (["  Output:"] + output_lines.join("\n  "))) }
+
+							attempts -= 1
+							sleep @config.startup_health_check[:interval]
+						else
+							@logger.info(logloc) { "Startup health check passed." }
+							break
+						end
+					end
+
+					if attempts == 0
+						raise MobyDerp::StartupHealthCheckError,
+							"Container #{container_name} has failed the startup health check command #{@config.startup_health_check[:attempts]} times.  Aborting."
+					end
+				end
+
+				c.id
 			rescue Docker::Error::ClientError => ex
 				raise MobyDerp::ContainerError,
 				      "moby daemon returned error: #{ex.message}"
