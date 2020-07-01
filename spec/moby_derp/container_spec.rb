@@ -637,7 +637,6 @@ describe MobyDerp::Container do
 			let(:mock_docker_network) { instance_double(Docker::Network) }
 
 			before(:each) do
-				allow(pod).to receive(:network_name).and_return("bridge")
 				allow(pod).to receive(:hostname).and_return("bob-spec")
 				allow(pod).to receive(:expose).and_return([])
 				allow(Docker::Network).to receive(:get).with("bridge").and_return(mock_docker_network)
@@ -646,30 +645,37 @@ describe MobyDerp::Container do
 					.and_return("EnableIPv6" => false)
 			end
 
-			it "spawns a whole different sort of container" do
-				expect(Docker::Container)
-					.to receive(:create) do |create_options|
-						# These are just the things that setting root_container: true
-						# directly changes.  Lots of other things, configured by regular
-						# config parameters, also need to be adjusted to make a "proper"
-						# root container.
-						expect(create_options["name"]).to eq("spec-pod")
-						expect(create_options["HostConfig"]["Init"]).to eq(true)
-						expect(create_options["HostConfig"]["NetworkMode"]).to eq("bridge")
-						expect(create_options["HostConfig"]).to_not have_key("IpcMode")
-						expect(create_options["HostConfig"]).to_not have_key("PidMode")
-						expect(create_options["Labels"]).to_not have_key("org.hezmatt.moby-derp.root-container-id")
-						expect(create_options["MacAddress"]).to match(/\A02(:[0-9a-f]{2}){5}\z/)
-						mock_docker_container
-					end
-				expect(mock_docker_container).to receive(:start!).with(no_args)
+			context "on the default bridge network" do
+				before(:each) do
+					allow(pod).to receive(:network_name).and_return("bridge")
+				end
 
-				container.run
+				it "spawns a whole different sort of container" do
+					expect(Docker::Container)
+						.to receive(:create) do |create_options|
+							# These are just the things that setting root_container: true
+							# directly changes.  Lots of other things, configured by regular
+							# config parameters, also need to be adjusted to make a "proper"
+							# root container.
+							expect(create_options["name"]).to eq("spec-pod")
+							expect(create_options["HostConfig"]["Init"]).to eq(true)
+							expect(create_options["HostConfig"]["NetworkMode"]).to eq("bridge")
+							expect(create_options["HostConfig"]).to_not have_key("IpcMode")
+							expect(create_options["HostConfig"]).to_not have_key("PidMode")
+							expect(create_options["Labels"]).to_not have_key("org.hezmatt.moby-derp.root-container-id")
+							expect(create_options["MacAddress"]).to match(/\A02(:[0-9a-f]{2}){5}\z/)
+							mock_docker_container
+						end
+					expect(mock_docker_container).to receive(:start!).with(no_args)
+
+					container.run
+				end
 			end
 
-			context "with an invalid network name" do
+			context "with a pod network name that doesn't exist" do
 				before(:each) do
-					allow(Docker::Network).to receive(:get).with("bridge").and_raise(Docker::Error::NotFoundError)
+					allow(pod).to receive(:network_name).and_return("non-existent")
+					allow(Docker::Network).to receive(:get).with("non-existent").and_raise(Docker::Error::NotFoundError)
 				end
 
 				it "raises an appropriate exception" do
@@ -679,7 +685,7 @@ describe MobyDerp::Container do
 
 			context "with an IPv6 network" do
 				before(:each) do
-					allow(Docker::Network).to receive(:get).with("bridge").and_return(mock_docker_network)
+					allow(Docker::Network).to receive(:get).and_return(mock_docker_network)
 					allow(mock_docker_network)
 						.to receive(:info)
 						.and_return(
@@ -700,29 +706,53 @@ describe MobyDerp::Container do
 						)
 				end
 
-				it "allocates an IPv6 address from the appropriate pool" do
-					expect(Docker::Container)
-						.to receive(:create) do |create_options|
-							expect(create_options["NetworkingConfig"])
-								.to match(
-									"EndpointsConfig" => {
-										"bridge" => {
-											"IPAMConfig" => {
-												"IPv6Address" => match(/\A2001:db8::[0-9a-f:]+\z/)
+				context "on the default bridge network" do
+					before(:each) do
+						allow(pod).to receive(:network_name).and_return("bridge")
+					end
+
+					it "doesn't try to force an IPv6 address" do
+						expect(Docker::Container)
+							.to receive(:create) do |create_options|
+								expect(create_options["NetworkingConfig"]).to be(nil)
+								mock_docker_container
+							end
+						expect(mock_docker_container).to receive(:start!).with(no_args)
+
+						container.run
+					end
+				end
+
+				context "on a user-defined network" do
+					before(:each) do
+						allow(pod).to receive(:network_name).and_return("ipv6")
+					end
+
+					it "allocates an IPv6 address from the appropriate pool" do
+						expect(Docker::Container)
+							.to receive(:create) do |create_options|
+								expect(create_options["NetworkingConfig"])
+									.to match(
+										"EndpointsConfig" => {
+											"ipv6" => {
+												"IPAMConfig" => {
+													"IPv6Address" => match(/\A2001:db8::[0-9a-f:]+\z/)
+												}
 											}
 										}
-									}
-								)
-							mock_docker_container
-						end
-					expect(mock_docker_container).to receive(:start!).with(no_args)
+									)
+								mock_docker_container
+							end
+						expect(mock_docker_container).to receive(:start!).with(no_args)
 
-					container.run
+						container.run
+					end
 				end
 
 				context "with a custom IPAM driver" do
 					before(:each) do
-						allow(Docker::Network).to receive(:get).with("bridge").and_return(mock_docker_network)
+						allow(pod).to receive(:network_name).and_return("waluigi")
+						allow(Docker::Network).to receive(:get).with("waluigi").and_return(mock_docker_network)
 						allow(mock_docker_network)
 							.to receive(:info)
 							.and_return(
@@ -740,7 +770,8 @@ describe MobyDerp::Container do
 
 				context "with no IPv6 subnets" do
 					before(:each) do
-						allow(Docker::Network).to receive(:get).with("bridge").and_return(mock_docker_network)
+						allow(pod).to receive(:network_name).and_return("ipv6less")
+						allow(Docker::Network).to receive(:get).with("ipv6less").and_return(mock_docker_network)
 						allow(mock_docker_network)
 							.to receive(:info)
 							.and_return(
@@ -765,6 +796,7 @@ describe MobyDerp::Container do
 
 			context "with exposed ports" do
 				before(:each) do
+					allow(pod).to receive(:network_name).and_return("bridge")
 					allow(pod).to receive(:expose).and_return(["80/tcp", "53/udp"])
 				end
 
@@ -782,6 +814,7 @@ describe MobyDerp::Container do
 
 			context "with core labels" do
 				before(:each) do
+					allow(pod).to receive(:network_name).and_return("bridge")
 					allow(pod).to receive(:root_labels).and_return("freddie" => "mercury")
 				end
 

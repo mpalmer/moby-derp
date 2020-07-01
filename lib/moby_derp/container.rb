@@ -90,7 +90,7 @@ module MobyDerp
 						"Init"        => true,
 					}
 					params["MacAddress"] = container_mac_address
-					if network_uses_ipv6?
+					if network_uses_ipv6? && user_defined_network?
 						params["NetworkingConfig"] = {
 							"EndpointsConfig" => {
 								@pod.network_name => {
@@ -252,6 +252,10 @@ module MobyDerp
 
 		def network_uses_ipv6?
 			docker_network.info["EnableIPv6"]
+		end
+
+		def user_defined_network?
+			!%w{bridge host none}.include?(@pod.network_name)
 		end
 
 		def container_ipv6_address
