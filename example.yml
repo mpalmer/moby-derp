@@ -322,8 +322,8 @@ expose:
 # in the `moby-derp` README).
 #
 publish:
-  - :80
-  - :1234-1237
+  - ":80"
+  - ":1234-1237"
 
 # If you have a burning desire to have all exposed ports automatically published
 # to (not-so-)randomly chosen ephemeral ports, you can set this option to `true`.

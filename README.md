@@ -84,7 +84,7 @@ removed.  This is used as the prefix for the name of all containers in the pod.
 Some aspects of `moby-derp`'s operation are security-sensitive, and thus shouldn't
 be able to be modified by the ordinary user.  There is a
 system-wide configuration file for this purpose, by default located at
-`/etc/moby-derp.yml`.
+`/etc/moby-derp.conf`.
 
 Its structure is quite simple.  A full example looks like this:
 
