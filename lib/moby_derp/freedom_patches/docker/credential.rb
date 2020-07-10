@@ -29,7 +29,7 @@ module Docker
 				cred = hunt_for_image_domain_cred(ref, docker_config.fetch("auths", {}))
 
 				if cred
-					user, pass = JSON.parse(cred.fetch("auth", "null"))&.unpack("m")&.first&.split(":", 2)
+					user, pass = cred["auth"]&.unpack("m")&.first&.split(":", 2)
 
 					if user && pass
 						{ username: user, password: pass, serveraddress: image_domain(ref) }
