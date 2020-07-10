@@ -35,7 +35,6 @@ describe MobyDerp::Container do
 		allow(pod).to receive(:logger).and_return(logger)
 		allow(Docker::Image)
 			.to receive(:create)
-			.with(fromImage: "bob:latest")
 			.and_return(mock_image = instance_double(Docker::Image))
 		allow(mock_image).to receive(:id).and_return("sha256:imgimgimgimg")
 		allow(Docker::Container).to receive(:get).and_raise(Docker::Error::NotFoundError)
@@ -161,6 +160,16 @@ describe MobyDerp::Container do
 					.to receive(:create)
 					.with(any_args)
 				expect(mock_docker_container).to receive(:start!).with(no_args)
+
+				container.run
+			end
+		end
+
+		context "when the image doesn't have a label" do
+			let(:container_options) { base_options.merge(image: "bob") }
+
+			it "tries to fetch the latest tag" do
+				expect(Docker::Image).to receive(:create).with(fromImage: "bob:latest")
 
 				container.run
 			end
