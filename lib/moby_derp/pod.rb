@@ -25,7 +25,7 @@ module MobyDerp
 
 				if c.info["Labels"]["org.hezmatt.moby-derp.pod-name"] == name &&
 						!c.info["Labels"]["org.hezmatt.moby-derp.root-container-id"].nil? &&
-						!desired_container_names.include?(c_name.split(".", 2).last)
+						!desired_container_names.include?(c_name)
 					@logger.info(logloc) { "Removing stale container #{c_name}" }
 					c.stop
 					c.delete
