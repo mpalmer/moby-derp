@@ -53,11 +53,20 @@ containers:
     # you very happy.
     #
     environment:
-      # The environment is specified as a map of variable name to variable
-      # values.  For passing big strings, you may want to get familiar with
-      # YAML's many string quoting and escaping modes.
+      # The environment is specified as a map of environment variable names to
+      # environment variable values.
       #
       APP_ENV: production
+
+      # Environment variable values must be strings by the time YAML has
+      # finished with them.  That means that values YAML would normally interpret
+      # as other types must be quoted.
+      HAS_BUGS: 'false'
+      FINAL_ANSWER: '42'
+
+      # For passing big strings, you may want to get familiar with
+      # YAML's many string quoting and escaping modes.
+      #
       # Embedding your private key like this isn't necessarily a particularly
       # good idea, but as an example of where you might need multiline strings,
       # it works very well.
