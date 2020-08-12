@@ -85,6 +85,7 @@ module MobyDerp
 		def container_creation_parameters
 			{}.tap do |params|
 				if @root_container
+					params["Hostname"] = @pod.hostname
 					params["HostConfig"] = {
 						"NetworkMode" => @pod.network_name,
 						"Init"        => true,
