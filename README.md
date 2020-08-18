@@ -124,6 +124,9 @@ The keys are:
   "localhost"; so pointing to your local caching resolver using `127.0.0.1`
   will not end in happiness and puppies.
 
+* **`host_hostname`**: the hostname to use when generating the container
+  hostname.
+
 If you wish to modify the location of the `moby-derp` system-wide configuration
 file, you can do so by setting the `MOBY_DERP_SYSTEM_CONFIG_FILE` environment
 variable.  Note, however, that it is a terrible idea to let ordinary users control
