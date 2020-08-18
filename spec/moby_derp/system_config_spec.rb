@@ -48,6 +48,20 @@ describe MobyDerp::SystemConfig do
 		expect { MobyDerp::SystemConfig.new(42, moby_info, logger) }.to raise_error(ArgumentError)
 	end
 
+	it "uses the actual hostname by default for host_hostname" do
+		expect(Socket).to receive(:gethostname).and_return("batmobile")
+
+		expect(MobyDerp::SystemConfig.new(config_filename, moby_info, logger).host_hostname).to eq("batmobile")
+	end
+
+	context "with a host_hostname overide" do
+		let(:config_file_contents) { "mount_root: /tmp\nhost_hostname: overriden_value" }
+
+		it "uses the passed value" do
+			expect(MobyDerp::SystemConfig.new(config_filename, moby_info, logger).host_hostname).to eq("overriden_value")
+		end
+	end
+
 	context "with a port whitelist" do
 		let(:config_file_contents) { "mount_root: /tmp\nport_whitelist:\n  80: some-pod\n  443: some-pod" }
 
