@@ -47,11 +47,6 @@ module MobyDerp
 				raise ConfigurationError,
 				      "use_host_resolv_conf must be true or false"
 			end
-
-			unless File.directory?(@mount_root)
-				raise ConfigurationError,
-				      "mount_root #{@mount_root} must exist and be a directory"
-			end
 		end
 
 		private

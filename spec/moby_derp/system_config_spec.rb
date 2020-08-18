@@ -97,8 +97,6 @@ describe MobyDerp::SystemConfig do
 			"mount_root:\n- one\n- two",
 		"when the mount_root specified in the config file isn't an absolute path" =>
 			"mount_root: relative/path",
-		"when the mount_root specified in the config file doesn't exist" =>
-			"mount_root: /this/directory/hopefully/doesnt/exist",
 		"when the specified config file isn't a YAML hash" =>
 			"42.5",
 		"when network_name isn't a string" =>
