@@ -167,8 +167,9 @@ describe MobyDerp::Pod do
 					allow(mock_container_config).to receive(:name).and_return("pod-fun")
 				end
 
-				it "raises an exception that tells us which container failed" do
-					expect { pod.run }.to raise_error(MobyDerp::ContainerError, /error while running container pod-fun/)
+				it "logs an exception that tells us which container failed" do
+					expect(logger).to receive(:error)
+					pod.run
 				end
 			end
 
