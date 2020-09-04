@@ -38,9 +38,9 @@ module MobyDerp
 				begin
 					MobyDerp::Container.new(pod: self, container_config: cfg).run
 				rescue MobyDerp::ContainerError => ex
-					raise MobyDerp::ContainerError,
-					      "error while running container #{cfg.name}: #{ex.message}",
-							ex.backtrace
+					@logger.error(logloc) {
+						"Error while running container #{cfg.name}: #{ex.message}"
+					}
 				end
 			end
 		end
