@@ -125,7 +125,7 @@ describe MobyDerp::Pod do
 					.and_return(
 						"Config" => {
 							"Labels" => {
-								"org.hezmatt.moby-derp.config-hash" => "sha256:211938e335e1252a548fb313fdfd381a67237755a66f747abb334e1cd196514d",
+								"org.hezmatt.moby-derp.config-hash" => "sha256:4ac279c0d997ed00e2310aff712575e7142dab2ece8dfd747aa39756258ff4eb",
 								"org.hezmatt.moby-derp.pod-name"    => "mullet",
 							},
 						}
