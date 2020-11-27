@@ -23,6 +23,7 @@ describe MobyDerp::Pod do
 		allow(pod_config).to receive(:root_labels).and_return({})
 		allow(pod_config).to receive(:common_environment).and_return({})
 		allow(pod_config).to receive(:expose).and_return([])
+		allow(pod_config).to receive(:hostname).and_return("test-test")
 		allow(Docker::Container).to receive(:get).and_raise(Docker::Error::NotFoundError)
 		allow(Docker::Container).to receive(:create).and_return(mock_docker_container)
 		allow(mock_docker_container).to receive(:start!).and_return(mock_docker_container)
