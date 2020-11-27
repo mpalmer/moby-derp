@@ -57,8 +57,8 @@ module MobyDerp
 			@containers = @config.fetch("containers")
 			validate_containers
 
-			@logger.debug(logloc) { "Hostname is #{Socket.gethostname}" }
-			@hostname = @config.fetch("hostname", "#{@name.gsub("_", "-")}-#{Socket.gethostname}")
+			@logger.debug(logloc) { "Hostname is #{@system_config.host_hostname}" }
+			@hostname = @config.fetch("hostname", "#{@name.gsub("_", "-")}-#{@system_config.host_hostname}")
 
 			@common_environment = @config.fetch("common_environment", {})
 			@common_labels      = @config.fetch("common_labels", {})

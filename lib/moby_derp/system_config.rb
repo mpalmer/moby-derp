@@ -1,9 +1,11 @@
 require_relative "./config_file"
 
+require "socket"
+
 module MobyDerp
 	class SystemConfig < ConfigFile
 		attr_reader :mount_root, :port_whitelist, :network_name, :use_host_resolv_conf,
-		            :cpu_count, :cpu_bits
+		            :cpu_count, :cpu_bits, :host_hostname
 
 		def initialize(config_data_or_filename, moby_info, logger)
 			@logger = logger
@@ -17,6 +19,7 @@ module MobyDerp
 				raise ArgumentError, "Unsupported type for config_data_or_filename parameter"
 			end
 
+			@host_hostname        = @config["host_hostname"] || Socket.gethostname
 			@mount_root           = @config["mount_root"]
 			@port_whitelist       = stringify_keys(@config["port_whitelist"] || {})
 			@network_name         = @config["network_name"] || "bridge"
