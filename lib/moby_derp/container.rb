@@ -29,6 +29,11 @@ module MobyDerp
 				if existing_container.info["Config"]["Labels"]["org.hezmatt.moby-derp.config-hash"] == params_hash(container_creation_parameters)
 					# Container is up-to-date
 					@logger.info(logloc) { "Container #{container_name} is up-to-date" }
+
+					if @config.restart == "always" && existing_container.info.dig("State", "Status") != "running"
+						existing_container.start
+					end
+
 					return existing_container.id
 				end
 
