@@ -88,6 +88,7 @@ module MobyDerp
 					params["HostConfig"] = {
 						"NetworkMode" => @pod.network_name,
 						"Init"        => true,
+						"IpcMode"     => "shareable"
 					}
 					params["MacAddress"] = container_mac_address
 					if network_uses_ipv6? && user_defined_network?
