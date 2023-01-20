@@ -52,6 +52,7 @@ describe MobyDerp::PodConfig do
 		allow(system_config).to receive(:mount_root).and_return("/srv/docker")
 		allow(system_config).to receive(:port_whitelist).and_return({})
 		allow(system_config).to receive(:network_name).and_return("CBS")
+		allow(system_config).to receive(:host_hostname).and_return("speccy")
 		allow(system_config).to receive(:use_host_resolv_conf).and_return(false)
 		allow(system_config).to receive(:logger).and_return(logger)
 	end
@@ -87,7 +88,7 @@ describe MobyDerp::PodConfig do
 		end
 
 		it "sets a default hostname" do
-			expect(Socket).to receive(:gethostname).and_return("speccy")
+			expect(system_config).to receive(:host_hostname).and_return("speccy")
 
 			expect(pod_config.hostname).to eq("my-pod-speccy")
 		end
@@ -118,7 +119,7 @@ describe MobyDerp::PodConfig do
 		let(:config_filename) { "./my_pod.yml" }
 
 		it "translates the hostname to have a hyphen instead" do
-			expect(Socket).to receive(:gethostname).and_return("speccy")
+			expect(system_config).to receive(:host_hostname).and_return("speccy")
 
 			expect(pod_config.hostname).to eq("my-pod-speccy")
 		end
