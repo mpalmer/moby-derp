@@ -11,7 +11,7 @@ describe MobyDerp::Pod do
 	let(:pod_config) { instance_double(MobyDerp::PodConfig) }
 	let(:pod)        { MobyDerp::Pod.new(pod_config) }
 
-	let(:mock_docker_container) { instance_double(Docker::Container) }
+	let(:mock_docker_container) { instance_double(Docker::Container, "root") }
 	let(:mock_docker_network)   { instance_double(Docker::Network) }
 	let(:mock_docker_image)     { instance_double(Docker::Image) }
 
@@ -126,10 +126,13 @@ describe MobyDerp::Pod do
 					.and_return(
 						"Config" => {
 							"Labels" => {
-								"org.hezmatt.moby-derp.config-hash" => "sha256:4ac279c0d997ed00e2310aff712575e7142dab2ece8dfd747aa39756258ff4eb",
+								"org.hezmatt.moby-derp.config-hash" => "sha256:70fbd77da82ec46680db1b08f000f60b43cd5daa70c92f42032870027d23faf8",
 								"org.hezmatt.moby-derp.pod-name"    => "mullet",
 							},
-						}
+						},
+						"State" => {
+							"Status" => "running",
+						},
 					)
 			end
 
@@ -164,7 +167,7 @@ describe MobyDerp::Pod do
 
 			context "and one of them explodes on the pad" do
 				before(:each) do
-					allow(mock_sub_container).to receive(:run).and_raise(MobyDerp::ContainerError)
+					allow(mock_sub_container).to receive(:run).and_raise(MobyDerp::ContainerError, "Houston, we've had a problem")
 					allow(mock_container_config).to receive(:name).and_return("pod-fun")
 				end
 

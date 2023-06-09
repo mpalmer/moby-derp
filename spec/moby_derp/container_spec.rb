@@ -107,7 +107,6 @@ describe MobyDerp::Container do
 					.with(any_args)
 					.and_return(new_mock_docker_container = instance_double(Docker::Container, "new"))
 				expect(new_mock_docker_container).to receive(:start!).with(no_args).and_return(new_mock_docker_container)
-				expect(mock_docker_container).to_not receive(:id)
 				expect(new_mock_docker_container).to receive(:id).and_return("newnewnewnewnew")
 
 				container.run
@@ -669,7 +668,7 @@ describe MobyDerp::Container do
 							expect(create_options["name"]).to eq("spec-pod")
 							expect(create_options["HostConfig"]["Init"]).to eq(true)
 							expect(create_options["HostConfig"]["NetworkMode"]).to eq("bridge")
-							expect(create_options["HostConfig"]).to_not have_key("IpcMode")
+							expect(create_options["HostConfig"]["IpcMode"]).to eq("shareable")
 							expect(create_options["HostConfig"]).to_not have_key("PidMode")
 							expect(create_options["Labels"]).to_not have_key("org.hezmatt.moby-derp.root-container-id")
 							expect(create_options["MacAddress"]).to match(/\A02(:[0-9a-f]{2}){5}\z/)

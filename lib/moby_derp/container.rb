@@ -19,7 +19,7 @@ module MobyDerp
 
 		def run
 			container_name = @root_container ? @pod.name : @config.name
-			@logger.debug(logloc) { "Calculated container name is #{container_name} (@root_container: #{@root_container.inspect}, @config.name: #{@config.name}, @pod.name: #{@pod.name}" }
+			@logger.debug(logloc) { "Calculated container name is #{container_name} (@root_container: #{@root_container.inspect}, @config.name: #{@config.name}, @pod.name: #{@pod.name})" }
 
 			begin
 				existing_container = Docker::Container.get(container_name)
@@ -29,6 +29,7 @@ module MobyDerp
 				if existing_container.info["Config"]["Labels"]["org.hezmatt.moby-derp.config-hash"] == params_hash(container_creation_parameters)
 					# Container is up-to-date
 					@logger.info(logloc) { "Container #{container_name} is up-to-date" }
+					@logger.debug(logloc) { "Container #{container_name} has restart=#{@config.restart}, state is #{existing_container.info.dig("State", "Status")}" }
 
 					if @config.restart == "always" && existing_container.info.dig("State", "Status") != "running"
 						existing_container.start
