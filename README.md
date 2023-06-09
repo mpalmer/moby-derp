@@ -175,7 +175,8 @@ caveats:
 # Security
 
 This section discusses the security model and guarantees of `moby-derp`.  It
-isn't necessary to simply use `moby-derp` in most circumstances.
+isn't necessary to understand this section if you simply want to use
+`moby-derp` in most circumstances.
 
 The fundamental principle of `moby-derp` is that users are given control over
 a certain portion of the container and filesystem namespace, by virtue of their
@@ -239,7 +240,7 @@ See [`CONTRIBUTING.md`](CONTRIBUTING.md).
 Unless otherwise stated, everything in this repo is covered by the following
 copyright notice:
 
-    Copyright (C) 2019  Matt Palmer <matt@hezmatt.org>
+    Copyright (C) 2019, 2023  Matt Palmer <matt@hezmatt.org>
 
     This program is free software: you can redistribute it and/or modify it
     under the terms of the GNU General Public License version 3, as
