@@ -48,6 +48,12 @@ containers:
     #
     command: '--foo=bar --wombat'
 
+    # Occasionally a container image will have defined an entrypoint that isn't
+    # appropriate for your situation.  Although fixing the image is the preferable
+    # option, if that isn't feasible, you can instead override the image's
+    # entrypoint here.
+    entrypoint: '/usr/local/bin/alternate-init'
+
     # The 12-factor app concept says that all configuration should be passed
     # via the environment.  If that is your bag, then this section will make
     # you very happy.

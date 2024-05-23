@@ -426,6 +426,10 @@ describe MobyDerp::Container do
 				{ command: ["--foo", "--bar"] },
 				{ "Cmd" => ["--foo", "--bar"] },
 			],
+			"an entrypoint" => [
+				{ entrypoint: "/usr/local/bin/alternate-init" },
+				{ "Entrypoint" => ["/usr/local/bin/alternate-init"] },
+			],
 			"readonly: true" => [
 				{ readonly: true },
 				{

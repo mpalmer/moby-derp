@@ -7,7 +7,7 @@ require "shellwords"
 
 module MobyDerp
 	class ContainerConfig
-		attr_reader :name, :image, :update_image, :command, :environment, :mounts,
+		attr_reader :name, :image, :update_image, :command, :entrypoint, :environment, :mounts,
 		            :labels, :readonly, :stop_signal, :stop_timeout, :user, :restart, :limits,
 		            :startup_health_check
 
@@ -17,6 +17,7 @@ module MobyDerp
 		               image:,
 		               update_image: true,
 		               command: [],
+		               entrypoint: nil,
 		               environment: {},
 		               mounts: [],
 		               labels: {},
@@ -30,13 +31,14 @@ module MobyDerp
 		              )
 			@system_config, @pod_config, @name, @image = system_config, pod_config, "#{pod_config.name}.#{container_name}", image
 
-			@update_image, @command, @environment, @mounts, @labels = update_image, command, environment, mounts, labels
+			@update_image, @command, @entrypoint, @environment, @mounts, @labels = update_image, command, entrypoint, environment, mounts, labels
 			@readonly, @stop_signal, @stop_timeout, @user, @restart = readonly, stop_signal, stop_timeout, user, restart
 			@limits, @startup_health_check = limits, startup_health_check
 
 			validate_image
 			validate_update_image
 			validate_command
+			validate_entrypoint
 			validate_environment
 			validate_mounts
 			validate_labels
@@ -85,6 +87,13 @@ module MobyDerp
 			else
 				raise ConfigurationError,
 				      "command must be string or array of strings"
+			end
+		end
+
+		def validate_entrypoint
+			unless @entrypoint.nil? || @entrypoint.is_a?(String)
+				raise ConfigurationError,
+					   "entrypoint must be a string"
 			end
 		end
 

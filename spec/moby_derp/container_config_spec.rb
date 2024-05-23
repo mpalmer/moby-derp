@@ -48,6 +48,9 @@ describe MobyDerp::ContainerConfig do
 		"element of command array isn't a string" =>
 			{ command: ["foo", "bar", 42] },
 
+		"entrypoint isn't a string" =>
+			{ entrypoint: ["foo", "bar"] },
+
 		"environment isn't a hash" =>
 			{ environment: "rainforest" },
 		"environment contains non-string key" =>

@@ -131,6 +131,10 @@ module MobyDerp
 				params["StopSignal"]  = @config.stop_signal
 				params["StopTimeout"] = @config.stop_timeout
 
+				if !@config.entrypoint.nil?
+					params["Entrypoint"] = [@config.entrypoint]
+				end
+
 				if @config.user
 					params["User"] = @config.user
 				end
