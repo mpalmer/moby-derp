@@ -61,27 +61,59 @@ describe MobyDerp::Container do
 		end
 
 		context "with an existing container with the same config hash" do
-			before(:each) do
-				allow(Docker::Container).to receive(:get).with("spec-pod.bob").and_return(mock_docker_container)
-				allow(mock_docker_container)
-					.to receive(:info)
-					.and_return(
-						"Config" => {
-							"Labels" => {
-								"org.hezmatt.moby-derp.config-hash"       => "sha256:495184c751c8e6962ddf4fbaca5a2a5fae07bf7b17724f189b76e4b73cef8215",
-								"org.hezmatt.moby-derp.pod-name"          => "spec-pod",
-								"org.hezmatt.moby-derp.root-container-id" => "xyz987",
+			context "that is already running" do
+				before(:each) do
+					allow(Docker::Container).to receive(:get).with("spec-pod.bob").and_return(mock_docker_container)
+					allow(mock_docker_container)
+						.to receive(:info)
+						.and_return(
+							"Config" => {
+								"Labels" => {
+									"org.hezmatt.moby-derp.config-hash"       => "sha256:495184c751c8e6962ddf4fbaca5a2a5fae07bf7b17724f189b76e4b73cef8215",
+									"org.hezmatt.moby-derp.pod-name"          => "spec-pod",
+									"org.hezmatt.moby-derp.root-container-id" => "xyz987",
+								}
 							}
-						}
-					)
+						)
+				end
+
+				it "does not touch Docker" do
+					expect(Docker::Container).to receive(:get)
+					expect(Docker::Container).to_not receive(:create)
+					expect(mock_docker_container).to_not receive(:delete)
+
+					container.run
+				end
 			end
 
-			it "does not touch Docker" do
-				expect(Docker::Container).to receive(:get)
-				expect(Docker::Container).to_not receive(:create)
-				expect(mock_docker_container).to_not receive(:delete)
+			context "that has stopped" do
+				let(:base_options) { { image: "bob:latest", restart: "always" } }
+				before(:each) do
+					allow(Docker::Container).to receive(:get).with("spec-pod.bob").and_return(mock_docker_container)
+					allow(mock_docker_container)
+						.to receive(:info)
+						.and_return(
+							"State" => {
+								"Status" => "stopped"
+							},
+							"Config" => {
+								"Labels" => {
+									"org.hezmatt.moby-derp.config-hash"       => "sha256:c656cc9014fb7dc57b9dc602bebafa54af0933f5a00991374acca7385266f62d",
+									"org.hezmatt.moby-derp.pod-name"          => "spec-pod",
+									"org.hezmatt.moby-derp.root-container-id" => "xyz987",
+								}
+							}
+						)
+				end
 
-				container.run
+				it "starts the container again" do
+					expect(Docker::Container).to receive(:get)
+					expect(Docker::Container).to_not receive(:create)
+					expect(mock_docker_container).to_not receive(:delete)
+					expect(mock_docker_container).to receive(:start)
+
+					container.run
+				end
 			end
 		end
 
