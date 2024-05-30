@@ -334,6 +334,20 @@ describe MobyDerp::Container do
 			end
 		end
 
+		context "with environment_files set in the container config" do
+			let(:container_options) { base_options.merge(environment_files: { "SUPER_SECRET" => "some/file" }) }
+
+			it "sets the environment in the created container" do
+				expect(File).to receive(:read).with("/srv/docker/my-pod/some/file").and_return("s00p3rs3kr1t")
+				expect(Docker::Container).to receive(:create) do |create_config|
+					expect(create_config["Env"]).to include("SUPER_SECRET=s00p3rs3kr1t")
+					mock_docker_container
+				end
+
+				container.run
+			end
+		end
+
 		context "with mounts set in the container config" do
 			let(:container_options) do
 				base_options.merge(mounts: [{ "source" => "babble", "target" => "/app", readonly: true }])

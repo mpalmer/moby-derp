@@ -73,14 +73,35 @@ containers:
       # For passing big strings, you may want to get familiar with
       # YAML's many string quoting and escaping modes.
       #
-      # Embedding your private key like this isn't necessarily a particularly
-      # good idea, but as an example of where you might need multiline strings,
-      # it works very well.
+      COMPLEX_CONFIG: |
+        {
+          "foo": "bar",
+          "baz": [1, 1, 2, 3, 5, 8, 13]
+        }
+
+    # Read an environment variable value from a file.
+    #
+    # The keys are environment variable names, like any other, but the values
+    # those environment variables will have are read from the file given as the
+    # value of the entry, specified relative to the pod root directory on the host.
+    #
+    # The intended use case for this feature is for injecting secrets, where the
+    # value of the secret is written to a file on the host by some means outside the
+    # usual deployment mechanisms (so the data never goes into the repo), but can
+    # be accessed at runtime via the environment.
+    #
+    # Note that if you specify the same environment variable name both in here and
+    # in the `environment` map, the results are undefined.  So don't do that.
+    #
+    # These environment files are read when `moby-derp` runs, and so only need be
+    # readable by the user that `moby-derp` runs as (typically `root`).
+    #
+    environment_files:
+      # This will set an environment variable named `PRIVATE_KEY` with the value
+      # read from `$pod_root/secret/private.key`, which presumably an administrator
+      # has previously written.
       #
-      PRIVATE_KEY: |
-        -----BEGIN PRIVATE KEY-----
-        AAAAsd...
-        -----END PRIVATE KEY-----
+      PRIVATE_KEY: secrets/private.key
 
     # Persisting data past the lifetime of a particular container is the job
     # of mounts.  Here you can specify filesystem locations on the host

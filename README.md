@@ -240,7 +240,7 @@ See [`CONTRIBUTING.md`](CONTRIBUTING.md).
 Unless otherwise stated, everything in this repo is covered by the following
 copyright notice:
 
-    Copyright (C) 2019, 2023  Matt Palmer <matt@hezmatt.org>
+    Copyright (C) 2019, 2023, 2024  Matt Palmer <matt@hezmatt.org>
 
     This program is free software: you can redistribute it and/or modify it
     under the terms of the GNU General Public License version 3, as

@@ -60,6 +60,23 @@ describe MobyDerp::ContainerConfig do
 		"environment key contains an equals sign" =>
 			{ environment: { "one=two" => "naaaah" } },
 
+		"environment_files isn't a hash" =>
+			{ environment_files: "rainforest" },
+		"environment_files contains non-string key" =>
+			{ environment_files: { 42 =>"the answer" } },
+		"environment_files contains non-string value" =>
+			{ environment_files: { "the answer" => 42 } },
+		"environment_files key contains an equals sign" =>
+			{ environment_files: { "one=two" => "naaaah" } },
+		"environment_files value is traversing upward" =>
+			{ environment_files: { "FOO" => "../../../../etc/passwd" } },
+		"environment_files value is sneakily traversing upward" =>
+			{ environment_files: { "FOO" => "foo/../../../../etc/passwd" } },
+		"environment_files value is trying to pop a homedir" =>
+			{ environment_files: { "FOO" => "~bob" } },
+		"environment_files value is an absolute path" =>
+			{ environment_files: { "FOO" => "/etc/passwd", } },
+
 		"mounts isn't an array" =>
 			{ mounts: "horse" },
 		"an invalid key in a common mount declaration" =>

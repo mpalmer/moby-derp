@@ -121,7 +121,7 @@ module MobyDerp
 				params["HostConfig"]["RestartPolicy"] = parsed_restart_policy
 				params["HostConfig"]["Mounts"]        = merged_mounts.map { |mount| mount_structure(mount) }
 
-				params["Env"]        = @pod.common_environment.merge(@config.environment).map { |k, v| "#{k}=#{v}" }
+				params["Env"]        = @pod.common_environment.merge(read_environment_files).merge(@config.environment).map { |k, v| "#{k}=#{v}" }
 				params["Volumes"]    = {}
 
 				params["name"]  = @root_container ? @pod.name : @config.name
@@ -175,6 +175,12 @@ module MobyDerp
 					params["Labels"]["org.hezmatt.moby-derp.root-container-id"] = @pod.root_container_id
 				end
 			end
+		end
+
+		def read_environment_files
+			@config.environment_files.map do |var, filename|
+				[var, File.read(File.join(@pod.mount_root, filename))]
+			end.to_h
 		end
 
 		def hash_labelled(params)

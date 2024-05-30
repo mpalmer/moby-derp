@@ -7,8 +7,8 @@ require "shellwords"
 
 module MobyDerp
 	class ContainerConfig
-		attr_reader :name, :image, :update_image, :command, :entrypoint, :environment, :mounts,
-		            :labels, :readonly, :stop_signal, :stop_timeout, :user, :restart, :limits,
+		attr_reader :name, :image, :update_image, :command, :entrypoint, :environment, :environment_files,
+		            :mounts, :labels, :readonly, :stop_signal, :stop_timeout, :user, :restart, :limits,
 		            :startup_health_check
 
 		def initialize(system_config:,
@@ -19,6 +19,7 @@ module MobyDerp
 		               command: [],
 		               entrypoint: nil,
 		               environment: {},
+		               environment_files: {},
 		               mounts: [],
 		               labels: {},
 		               readonly: false,
@@ -31,7 +32,7 @@ module MobyDerp
 		              )
 			@system_config, @pod_config, @name, @image = system_config, pod_config, "#{pod_config.name}.#{container_name}", image
 
-			@update_image, @command, @entrypoint, @environment, @mounts, @labels = update_image, command, entrypoint, environment, mounts, labels
+			@update_image, @command, @entrypoint, @environment, @environment_files, @mounts, @labels = update_image, command, entrypoint, environment, environment_files, mounts, labels
 			@readonly, @stop_signal, @stop_timeout, @user, @restart = readonly, stop_signal, stop_timeout, user, restart
 			@limits, @startup_health_check = limits, startup_health_check
 
@@ -40,6 +41,7 @@ module MobyDerp
 			validate_command
 			validate_entrypoint
 			validate_environment
+			validate_environment_files
 			validate_mounts
 			validate_labels
 			validate_readonly
@@ -103,6 +105,27 @@ module MobyDerp
 			if (bad_vars = @environment.keys.select { |k| k =~ /=/ }) != []
 				raise ConfigurationError,
 				      "environment variable names cannot include equals signs: #{bad_vars.inspect}"
+			end
+		end
+
+		def validate_environment_files
+			validate_hash(:environment_files)
+
+			if (bad_vars = @environment_files.keys.select { |k| k =~ /=/ }) != []
+				raise ConfigurationError,
+				      "environment variable names cannot include equals signs: #{bad_vars.inspect}"
+			end
+
+			@environment_files.each do |k, v|
+				if v =~ %r{(\A|/)\.\.($|/)}
+					raise ConfigurationError,
+					      "path traversal detected in #{k} -- this ain't a Fortinet, mate!"
+				end
+
+				if v =~ %r{\A(/|~)}
+					raise ConfigurationError,
+					      "environment file for #{k} can only be a relative path"
+				end
 			end
 		end
 
